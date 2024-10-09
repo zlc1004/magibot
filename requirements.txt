@@ -1,0 +1,4 @@
+requests
+discord
+bs4
+html5lib
