@@ -3,7 +3,7 @@ import requests
 import discord
 from bs4 import BeautifulSoup
 
-TOKEN = "TOKEN HERE"
+TOKEN = "token here"
 
 
 intents = discord.Intents.default()
@@ -102,7 +102,7 @@ async def minersbowserlab(ctx, address):
     except:
         pass
     if msg=="":
-        await ctx.send("bowserlab.ddns.net api down. Please try again later.")
+        await ctx.send("bowserlab.ddns.net api down, or invalid address. Please try again later.")
         return
     await ctx.send(msg)
 
@@ -121,7 +121,7 @@ async def walletstatsbowserlab(ctx, address):
     msg += "Paid24h: "+str(data["paid24h"])+"\n"
     msg += "Total: "+str(data["total"])+"\n"
     if msg=="":
-        await ctx.send("bowserlab.ddns.net api down. Please try again later.")
+        await ctx.send("bowserlab.ddns.net api down, or invalid address. Please try again later.")
         return
     await ctx.send(msg)
 
@@ -172,7 +172,7 @@ async def minerslidonia(ctx, address):
     except:
         pass
     if msg=="":
-        await ctx.send("lidonia.com api down. Please try again later.")
+        await ctx.send("lidonia.com api down, or invalid address. Please try again later.")
         return
     await ctx.send(msg)
 
@@ -191,12 +191,81 @@ async def walletstatslidonia(ctx, address):
     msg += "Paid24h: "+str(data["paid24h"])+"\n"
     msg += "Total: "+str(data["total"])+"\n"
     if msg=="":
-        await ctx.send("lidonia.com api down. Please try again later.")
+        await ctx.send("lidonia.com api down, or invalid address. Please try again later.")
+        return
+    await ctx.send(msg)
+
+
+@bot.hybrid_command(brief="Get miner information for a given address in zpool pool",description="Get miner information for a given address in zpool pool")
+async def minerszpool(ctx, address):
+    if not checkAddress(address):
+        await ctx.send("Invalid address")
+        return
+    msg=""
+    try:
+        data = requests.get(
+            "https://zpool.ca/api/walletEx?address="+address, verify=False, headers={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0"}).json()
+
+        msg += "## Count: "+str(len(data["miners"]))+"\n"
+        msg += "---------------------------------\n"
+        for miner in data["miners"]:
+            msg += "Version: "+miner["version"]+"\n"
+            msg += "Algo: "+miner["algo"]+"\n"
+            msg += "Accepted: "+str(miner["accepted"])+"\n"
+            msg += "Rejected: "+str(miner["rejected"])+"\n"
+            msg += "\n"
+    except:
+        pass
+    # try:
+    #     data2 = requests.get("http://zpool.ca/site/wallet_miners_results?address="+address, verify=False, headers={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0"}).content
+    #     soup = BeautifulSoup(data2, 'html5lib')
+    #     dat = soup.find_all("table", {"class": "dataGrid2"})
+    #     dat = dat[0].find_all("tr", {"class": "ssrow"})
+    #     tmp=[]
+    #     tmp2=[]
+    #     for elm in dat:
+    #         tmp+=(elm.find_all("td"))
+    #     for elm in tmp:
+    #         if elm.find("b"):
+    #             tmp2.append(elm.find("b").text)
+    #             continue
+    #         tmp2.append(elm.text)
+
+    #     msg += "## Summary\n"
+    #     msg += "---------------------------------\n"
+
+    #     for i in range(len(tmp2)//4):
+    #         msg+="Algo: "+(tmp2[i*4])+"\n"
+    #         msg+="Workers: "+(tmp2[i*4+1])+"\n"
+    #         msg+="Hashrate: "+(tmp2[i*4+2])+"\n"
+    # except:
+    #     pass
+    if msg=="":
+        await ctx.send("zpool.ca api down, or invalid address. Please try again later.")
+        return
+    await ctx.send(msg)
+
+
+@bot.hybrid_command(brief="Get wallet stats for a given address in zpool pool",description="Get wallet stats for a given address in zpool pool")
+async def walletstatszpool(ctx, address):
+    if not checkAddress(address):
+        await ctx.send("Invalid address")
+        return
+    data = requests.get(
+        "https://zpool.ca/api/wallet?address="+address, verify=False, headers={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0"}).json()
+    # msg = "Unsold: "+str(data["unsold"])+"\n"
+    msg=""
+    msg += "Balance: "+str(data["balance"])+"\n"
+    msg += "Unpaid: "+str(data["unpaid"])+"\n"
+    msg += "Paid24h: "+str(data["paid24h"])+"\n"
+    msg += "Total: "+str(data["total"])+"\n"
+    if msg=="":
+        await ctx.send("zpool.ca api down, or invalid address. Please try again later.")
         return
     await ctx.send(msg)
 
 @bot.hybrid_command(brief="Show credits",description="Show credits about the bot, and the projects and persons that made this bot possible.")
 async def credits(ctx):
-    await ctx.send("This bot is made by @notlucasz228. \nYou can find the source code at github.com/zlc1004/maigbot.\nThis bot uses the magizap api for mining and staking profit calculations. \nThis bot uses the bowserlab and lidonia api for pool information. \nThis bot uses the discord.py library for discord bot creation. \nThis bot uses the requests library for making http requests. \nThis bot uses the beautifulsoup library for parsing html content.")
+    await ctx.send("This bot is made by @notlucasz228. \nYou can find the source code at github.com/zlc1004/maigbot.\nThis bot uses the magizap api for mining and staking profit calculations. \nThis bot uses the bowserlab, zpool, and lidonia api for pool information. \nThis bot uses the discord.py library for discord bot creation. \nThis bot uses the requests library for making http requests. \nThis bot uses the beautifulsoup library for parsing html content.")
     
 bot.run(TOKEN)
